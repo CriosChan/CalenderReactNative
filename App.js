@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, Button, TouchableOpacity, ScrollView } from 'react-native';
+import React, {useState} from 'react';
+import { StyleSheet, Text, View, SafeAreaView, Button, TouchableOpacity, ScrollView, FlatList, setState } from 'react-native';
 
 // System de reformation chiffre vers mot
 const ReformatMonth = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre"]
@@ -8,8 +8,44 @@ const ActualYear = new Date().getFullYear();
 
 var scrollmonth = null;
 
+var DefaultMonth = ActualMonth;
+var DefaultYear = ActualYear;
+
+var initialData = [
+  {id: '0', month: DefaultMonth-2, year: DefaultYear},
+  {id: '1', month: DefaultMonth-1, year: DefaultYear},
+  {id: '2', month: DefaultMonth, year: DefaultYear},
+  {id: '3', month: DefaultMonth+1, year: DefaultYear},
+  {id: '4', month: DefaultMonth+2, year: DefaultYear},
+];
+
 const TestRN = () => {
   scrollmonth = React.useRef(null);
+  const [data, setDataState] = useState(initialData);
+  const generateData = () => {
+    if(DefaultMonth >= 10){
+      DefaultMonth = 0;
+      DefaultYear ++;
+      var initialData = [
+        {id: '0', month: DefaultMonth+10, year: DefaultYear-1},
+        {id: '1', month: DefaultMonth+11, year: DefaultYear-1},
+        {id: '2', month: DefaultMonth, year: DefaultYear},
+        {id: '3', month: DefaultMonth+1, year: DefaultYear},
+        {id: '4', month: DefaultMonth+2, year: DefaultYear},
+      ]
+    } else {
+      var initialData = [
+        {id: '0', month: DefaultMonth-2, year: DefaultYear},
+        {id: '1', month: DefaultMonth-1, year: DefaultYear},
+        {id: '2', month: DefaultMonth, year: DefaultYear},
+        {id: '3', month: DefaultMonth+1, year: DefaultYear},
+        {id: '4', month: DefaultMonth+2, year: DefaultYear},
+      ]
+    }
+
+    setDataState(initialData)
+  }
+
   return (
     <SafeAreaView style={styles.container}>
     {/*START TOP LINE*/}
@@ -37,53 +73,57 @@ const TestRN = () => {
         {DaysText('S')}
         {DaysText('D')}
       </SafeAreaView>
-      <ScrollView ref={scrollmonth}>
-        <SafeAreaView style={{flexDirection: 'column'}}>
-          {/*Importation des mois*/}
-          {MonthCalender(0)}
-          {MonthCalender(1)}
-          {MonthCalender(2)}
-          {MonthCalender(3)}
-          {MonthCalender(4)}
-          {MonthCalender(5)}
-          {MonthCalender(6)}
-          {MonthCalender(7)}
-          {MonthCalender(8)}
-          {MonthCalender(9)}
-          {MonthCalender(10)}
-          {MonthCalender(11)}
-          {ScollChange()}
-        </SafeAreaView>
-      </ScrollView>
+      <FlatList
+      ref={scrollmonth}
+      data={data}
+      renderItem={Item}
+      keyExtractor={item => item.id}
+      onEndReached={() => {
+        DefaultMonth += 2;
+        generateData();
+        ScrollChange();
+      }}
+      />
     </SafeAreaView>
   );
 }
 
-const ScollChange = () => {
-  scrollmonth.current?.scrollTo({
-    y: 250*ActualMonth,
+const Item = ({item, index}) => {
+  return (
+    MonthCalender(item.month, item.year)
+  );
+}
+
+const ScrollChange = (Index = null) => {
+  scrollmonth.current?.scrollToOffset({
+    Offset: 500,
   });
   return;
 }
 
-const MonthCalender = (monthnomber = ActualMonth) => {
+const MonthCalender = (monthnomber = ActualMonth, yearnomber = ActualYear) => {
   // Premier jour du mois selectionne
-  var date = new Date(ActualYear, monthnomber, 1);
+  var date = new Date(yearnomber, monthnomber, 1);
   // Récupération du jours de la semaine
   var day = date.getDay();
   // Dernier jour du mois selectionne
-  var lastday = new Date(ActualYear, monthnomber + 1, 0).getDate();
+  var lastday = new Date(yearnomber, monthnomber + 1, 0).getDate();
   // Date du jour
   var today = new Date();
 
   let toreturn = [];
   let firstresult;
+
   // Boucle de calcul d'emplacement
   for(var i = 1; i <= parseInt(lastday); i++){
-
     if(i == 1){
-      toreturn[day] = i;
-      firstresult = day;
+      if(day == 0){
+        toreturn[7] = i;
+        firstresult = 7;
+      } else {
+        toreturn[day] = i;
+        firstresult = day;
+      }
     }
     toreturn[firstresult] = i;
     firstresult++;
@@ -94,7 +134,8 @@ const MonthCalender = (monthnomber = ActualMonth) => {
     let tempfinal = [];
     for(var y = 0 ; y <= 6; y++){
       let calcSearch = i + y * 7;
-      if(toreturn[calcSearch] == today.getDate() && monthnomber == today.getMonth()){
+      if(y == 6 && toreturn[calcSearch] == null) break;
+      if(toreturn[calcSearch] == today.getDate() && monthnomber == ActualMonth && yearnomber == ActualYear){
         tempfinal.push(Days(toreturn[calcSearch], 'true'));
       } else {
         tempfinal.push(Days(toreturn[calcSearch]));
@@ -108,22 +149,26 @@ const MonthCalender = (monthnomber = ActualMonth) => {
   }
   // Interface d'un mois
   return (
-    <SafeAreaView>
+    <View>
       <Text style={styles.textWhite}>{ReformatMonth[monthnomber]}</Text>
       <SafeAreaView style={{flexDirection: 'row', justifyContent: 'center', width: '100%'}}>
         {finalresult}
       </SafeAreaView>
-    </SafeAreaView>
+    </View>
   );
 }
 
+var keyCount = 0;
+const getKey = () => {
+    return keyCount++;
+}
 // Créacteur de texte
 const Days = (text = '', bg = '') => {
   // Surlignage du jour si égal à aujourd'hui
   if(bg == 'true'){
-    return (<Text style={styles.today}>{text}</Text>);
+    return (<Text key={getKey()} style={styles.today}>{text}</Text>);
   }
-  return (<Text style={styles.days}>{text}</Text>);
+  return (<Text key={getKey()} style={styles.days}>{text}</Text>);
 }
 
 const DaysText = (text = '') => {
