@@ -78,48 +78,27 @@ const MonthCalender = (monthnomber = ActualMonth) => {
           firstresult = 0;
           break;
         case 2 :
-          toreturn[0] = '';
           toreturn[1] = i;
           firstresult = 1;
           break;
         case 3 :
-          toreturn[0] = '';
-          toreturn[1] = '';
           toreturn[2] = i;
           firstresult = 2;
           break;
         case 4 :
-          toreturn[0] = '';
-          toreturn[1] = '';
-          toreturn[2] = '';
           toreturn[3] = i;
           firstresult = 3;
           break;
         case 5 :
-          toreturn[0] = '';
-          toreturn[1] = '';
-          toreturn[2] = '';
-          toreturn[3] = '';
           toreturn[4] = i;
           firstresult = 4;
           break;
         case 6 :
-          toreturn[0] = '';
-          toreturn[1] = '';
-          toreturn[2] = '';
-          toreturn[3] = '';
-          toreturn[4] = '';
           toreturn[5] = i;
           firstresult = 5;
           break;
-        case 7 :
-          toreturn[0] += '';
-          toreturn[1] += '';
-          toreturn[2] += '';
-          toreturn[3] += '';
-          toreturn[4] += '';
-          toreturn[5] += '';
-          toreturn[6] += i;
+        case 0 :
+          toreturn[6] = i;
           firstresult = 6;
           break;
       }
